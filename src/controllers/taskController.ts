@@ -1,60 +1,63 @@
 import { Request, Response, NextFunction } from 'express';
-import BoardService from '../services/boardService';
+import TaskService from '../services/taskService';
 import { STATUS_CODES } from '../constants/httpStatusCode';
 
-class BoardController {
-  public async getBoards(
+class TaskController {
+  public async getTasks(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const boards = await BoardService.getAllBoards();
-      res.status(STATUS_CODES.SUCCESS).json(boards);
+      const { listId } = req.params;
+      const tasks = await TaskService.getTasksByList(Number(listId));
+      res.status(STATUS_CODES.SUCCESS).json(tasks);
     } catch (error) {
       next(error);
     }
   }
 
-  public async createBoard(
+  public async createTask(
     req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
-      const { title, description } = req.body;
-      const board = await BoardService.createBoard(title, description);
-      res.status(STATUS_CODES.CREATED).json(board);
+      const { title, description, listId } = req.body;
+      const task = await TaskService.createTask(
+        title,
+        description,
+        Number(listId)
+      );
+      res.status(STATUS_CODES.CREATED).json(task);
     } catch (error) {
       next(error);
     }
   }
 
-  public async updateBoard(
-    req: Request<{ id: string }>,
+  public async updateTask(
+    req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const { id } = req.params;
       const { title, description } = req.body;
-
-      const board = await BoardService.updateBoard(id, title, description);
-      res.status(STATUS_CODES.SUCCESS).json(board);
+      const task = await TaskService.updateTask(Number(id), title, description);
+      res.status(STATUS_CODES.SUCCESS).json(task);
     } catch (error) {
       next(error);
     }
   }
 
-  public async deleteBoard(
-    req: Request<{ id: string }>,
+  public async deleteTask(
+    req: Request,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const { id } = req.params;
-
-      await BoardService.deleteBoard(id);
+      await TaskService.deleteTask(Number(id));
       res.status(STATUS_CODES.NO_CONTENT).send();
     } catch (error) {
       next(error);
@@ -62,4 +65,4 @@ class BoardController {
   }
 }
 
-export default new BoardController();
+export default new TaskController();

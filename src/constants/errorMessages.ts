@@ -1,8 +1,6 @@
 export const ERROR_MESSAGES = {
-  INVALID_CREDENTIALS: 'Invalid credentials',
-  UNEXPECTED_ERROR: 'Unexpected error',
-  REFRESH_TOKEN_REQUIRED: 'Refresh token is required',
-  INVALID_REFRESH_TOKEN: 'Invalid or expired refresh token',
-  USERNAME_EXISTS: 'Username already exists',
-  INTERNAL_SERVER_ERROR: 'Internal server error',
+  BOARD_NOT_FOUND: 'Board not found',
+  LIST_NOT_FOUND: 'List not found',
+  TASK_NOT_FOUND: 'Task not found',
+  SERVER_ERROR: 'An unexpected error occurred',
 };

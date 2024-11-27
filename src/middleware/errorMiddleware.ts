@@ -1,5 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { HTTP_STATUS_CODES } from '../constants/httpStatusCode';
+import { Request, Response } from 'express';
+
+import { STATUS_CODES } from '../constants/httpStatusCode';
 import { ERROR_MESSAGES } from '../constants/errorMessages';
 
 interface CustomError extends Error {
@@ -9,11 +10,10 @@ interface CustomError extends Error {
 export const errorHandler = (
   err: CustomError,
   req: Request,
-  res: Response,
-  next: NextFunction
+  res: Response
 ): void => {
-  const statusCode = err.statusCode || HTTP_STATUS_CODES.INTERNAL_SERVER_ERROR;
-  const message = err.message || ERROR_MESSAGES.UNEXPECTED_ERROR;
+  const statusCode = err.statusCode || STATUS_CODES.SERVER_ERROR;
+  const message = err.message || ERROR_MESSAGES.SERVER_ERROR;
 
   res.status(statusCode).json({
     message,
