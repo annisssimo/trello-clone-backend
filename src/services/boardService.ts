@@ -9,11 +9,11 @@ class BoardService {
     return await Board.findAll({ include: [List] });
   }
 
-  public async createBoard(title: string, description?: string) {
-    return await Board.create({ title, description });
+  public async createBoard(title: string) {
+    return await Board.create({ title });
   }
 
-  public async updateBoard(id: string, title: string, description?: string) {
+  public async updateBoard(id: string, title: string) {
     const board = await Board.findByPk(id);
     if (!board) {
       throw new HttpError(
@@ -21,7 +21,7 @@ class BoardService {
         STATUS_CODES.NOT_FOUND
       );
     }
-    await board.update({ title, description });
+    await board.update({ title });
     return board;
   }
 

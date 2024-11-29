@@ -63,6 +63,24 @@ class TaskController {
       next(error);
     }
   }
+
+  public async reorderTasks(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { listId } = req.params;
+      const { orderedTaskIds } = req.body; // Массив ID задач в новом порядке
+
+      await TaskService.reorderTasks(Number(listId), orderedTaskIds);
+      res
+        .status(STATUS_CODES.SUCCESS)
+        .json({ message: 'Tasks reordered successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export default new TaskController();

@@ -54,7 +54,27 @@ class ListController {
     try {
       const { id } = req.params;
       await ListService.deleteList(Number(id));
-      res.status(STATUS_CODES.NO_CONTENT).send();
+      res
+        .status(STATUS_CODES.NO_CONTENT)
+        .json({ message: 'List deleted successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async reorderLists(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { boardId } = req.params;
+      const { orderedListIds } = req.body; // Массив ID листов в новом порядке
+
+      await ListService.reorderLists(Number(boardId), orderedListIds);
+      res
+        .status(STATUS_CODES.SUCCESS)
+        .json({ message: 'Lists reordered successfully' });
     } catch (error) {
       next(error);
     }

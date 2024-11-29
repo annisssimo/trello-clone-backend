@@ -31,6 +31,13 @@ class List extends Model {
 
   @HasMany(() => Task)
   tasks!: Task[];
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  listOrder!: number;
 }
 
 export default List;

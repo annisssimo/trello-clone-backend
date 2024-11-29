@@ -22,8 +22,8 @@ class BoardController {
     next: NextFunction
   ): Promise<void> {
     try {
-      const { title, description } = req.body;
-      const board = await BoardService.createBoard(title, description);
+      const { title } = req.body;
+      const board = await BoardService.createBoard(title);
       res.status(STATUS_CODES.CREATED).json(board);
     } catch (error) {
       next(error);
@@ -37,9 +37,9 @@ class BoardController {
   ): Promise<void> {
     try {
       const { id } = req.params;
-      const { title, description } = req.body;
+      const { title } = req.body;
 
-      const board = await BoardService.updateBoard(id, title, description);
+      const board = await BoardService.updateBoard(id, title);
       res.status(STATUS_CODES.SUCCESS).json(board);
     } catch (error) {
       next(error);

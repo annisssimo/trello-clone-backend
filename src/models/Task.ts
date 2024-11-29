@@ -35,6 +35,13 @@ class Task extends Model {
 
   @BelongsTo(() => List)
   list!: List;
+
+  @Column({
+    type: DataType.INTEGER,
+    allowNull: false,
+    defaultValue: 0,
+  })
+  taskOrder!: number;
 }
 
 export default Task;

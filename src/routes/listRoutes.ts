@@ -5,6 +5,7 @@ const router = express.Router();
 
 router.get('/:boardId', listController.getLists);
 router.post('/', listController.createList);
+router.put('/reorder/:boardId', listController.reorderLists);
 router.put('/:id', listController.updateList);
 router.delete('/:id', listController.deleteList);
 

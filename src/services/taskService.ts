@@ -11,13 +11,21 @@ class TaskService {
 
   public async createTask(title: string, description: string, listId: number) {
     const list = await List.findByPk(listId);
+
     if (!list) {
       throw new HttpError(
         ERROR_MESSAGES.LIST_NOT_FOUND,
         STATUS_CODES.NOT_FOUND
       );
     }
-    return await Task.create({ title, description, listId });
+
+    const maxTaskOrder: number = await Task.max('taskOrder', {
+      where: { listId },
+    });
+
+    const taskOrder = maxTaskOrder ? maxTaskOrder + 1 : 1;
+
+    return await Task.create({ title, description, listId, taskOrder });
   }
 
   public async updateTask(id: number, title: string, description?: string) {
@@ -41,6 +49,26 @@ class TaskService {
       );
     }
     await task.destroy();
+  }
+
+  async reorderTasks(listId: number, orderedTaskIds: number[]): Promise<void> {
+    console.log(listId);
+    console.log(orderedTaskIds);
+    const tasks = await Task.findAll({ where: { listId } });
+
+    console.log(tasks);
+
+    const tasksMap = new Map(tasks.map((task) => [task.id, task]));
+    console.log(tasksMap);
+    let taskOrder = 1;
+
+    for (const taskId of orderedTaskIds) {
+      const task = tasksMap.get(taskId);
+
+      if (task) {
+        await task.update({ taskOrder: taskOrder++ });
+      }
+    }
   }
 }
 

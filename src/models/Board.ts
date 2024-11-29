@@ -12,12 +12,6 @@ class Board extends Model {
   })
   title!: string;
 
-  @Column({
-    type: DataType.TEXT,
-    allowNull: true,
-  })
-  description?: string;
-
   @HasMany(() => List)
   lists?: List[];
 }
