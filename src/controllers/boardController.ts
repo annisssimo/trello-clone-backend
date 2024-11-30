@@ -9,13 +9,10 @@ class BoardController {
     next: NextFunction
   ): Promise<void> {
     try {
-      console.log(11);
       const boards = await BoardService.getAllBoards();
-      console.log(boards);
       const boardsToSend = boards.map((board) => {
         return { id: board.id, title: board.title };
       });
-      console.log(boardsToSend);
       res.status(STATUS_CODES.SUCCESS).json(boardsToSend);
     } catch (error) {
       next(error);
