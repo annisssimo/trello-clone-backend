@@ -10,8 +10,19 @@ class ListController {
   ): Promise<void> {
     try {
       const { boardId } = req.params;
+
       const lists = await ListService.getListsByBoard(Number(boardId));
-      res.status(STATUS_CODES.SUCCESS).json(lists);
+
+      const listsToSend = lists.map((list) => {
+        return {
+          id: list.id,
+          title: list.title,
+          boardId: list.boardId,
+          listOrder: list.listOrder,
+        };
+      });
+
+      res.status(STATUS_CODES.SUCCESS).json(listsToSend);
     } catch (error) {
       next(error);
     }
@@ -25,7 +36,15 @@ class ListController {
     try {
       const { title, boardId } = req.body;
       const list = await ListService.createList(title, Number(boardId));
-      res.status(STATUS_CODES.CREATED).json(list);
+
+      const listToSend = {
+        id: list.id,
+        title: list.title,
+        boardId: list.boardId,
+        listOrder: list.listOrder,
+      };
+
+      res.status(STATUS_CODES.CREATED).json(listToSend);
     } catch (error) {
       next(error);
     }
@@ -38,9 +57,19 @@ class ListController {
   ): Promise<void> {
     try {
       const { id } = req.params;
+
       const { title } = req.body;
+
       const list = await ListService.updateList(Number(id), title);
-      res.status(STATUS_CODES.SUCCESS).json(list);
+
+      const listToSend = {
+        id: list.id,
+        title: list.title,
+        boardId: list.boardId,
+        listOrder: list.listOrder,
+      };
+
+      res.status(STATUS_CODES.SUCCESS).json(listToSend);
     } catch (error) {
       next(error);
     }

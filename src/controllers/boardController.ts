@@ -9,8 +9,14 @@ class BoardController {
     next: NextFunction
   ): Promise<void> {
     try {
+      console.log(11);
       const boards = await BoardService.getAllBoards();
-      res.status(STATUS_CODES.SUCCESS).json(boards);
+      console.log(boards);
+      const boardsToSend = boards.map((board) => {
+        return { id: board.id, title: board.title };
+      });
+      console.log(boardsToSend);
+      res.status(STATUS_CODES.SUCCESS).json(boardsToSend);
     } catch (error) {
       next(error);
     }
@@ -24,7 +30,10 @@ class BoardController {
     try {
       const { title } = req.body;
       const board = await BoardService.createBoard(title);
-      res.status(STATUS_CODES.CREATED).json(board);
+
+      const boardToSend = { id: board.id, title: board.title };
+
+      res.status(STATUS_CODES.CREATED).json(boardToSend);
     } catch (error) {
       next(error);
     }
@@ -40,7 +49,10 @@ class BoardController {
       const { title } = req.body;
 
       const board = await BoardService.updateBoard(id, title);
-      res.status(STATUS_CODES.SUCCESS).json(board);
+
+      const boardToSend = { id: board.id, title: board.title };
+
+      res.status(STATUS_CODES.SUCCESS).json(boardToSend);
     } catch (error) {
       next(error);
     }

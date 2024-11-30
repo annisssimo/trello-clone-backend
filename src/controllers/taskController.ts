@@ -11,7 +11,18 @@ class TaskController {
     try {
       const { listId } = req.params;
       const tasks = await TaskService.getTasksByList(Number(listId));
-      res.status(STATUS_CODES.SUCCESS).json(tasks);
+
+      const tasksToSend = tasks.map((task) => {
+        return {
+          id: task.id,
+          title: task.title,
+          description: task.description,
+          listId: task.listId,
+          taskOrder: task.taskOrder,
+        };
+      });
+
+      res.status(STATUS_CODES.SUCCESS).json(tasksToSend);
     } catch (error) {
       next(error);
     }
@@ -24,12 +35,22 @@ class TaskController {
   ): Promise<void> {
     try {
       const { title, description, listId } = req.body;
+
       const task = await TaskService.createTask(
         title,
         description,
         Number(listId)
       );
-      res.status(STATUS_CODES.CREATED).json(task);
+
+      const taskToSend = {
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        listId: task.listId,
+        taskOrder: task.taskOrder,
+      };
+
+      res.status(STATUS_CODES.CREATED).json(taskToSend);
     } catch (error) {
       next(error);
     }
@@ -42,9 +63,20 @@ class TaskController {
   ): Promise<void> {
     try {
       const { id } = req.params;
+
       const { title, description } = req.body;
+
       const task = await TaskService.updateTask(Number(id), title, description);
-      res.status(STATUS_CODES.SUCCESS).json(task);
+
+      const taskToSend = {
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        listId: task.listId,
+        taskOrder: task.taskOrder,
+      };
+
+      res.status(STATUS_CODES.SUCCESS).json(taskToSend);
     } catch (error) {
       next(error);
     }
