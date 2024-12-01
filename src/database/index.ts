@@ -2,6 +2,7 @@ import { sequelize } from './sequelize';
 import '../models/Board';
 import '../models/List';
 import '../models/Task';
+import '../models/UserActionLogs';
 
 async function initializeDatabase(): Promise<void> {
   try {

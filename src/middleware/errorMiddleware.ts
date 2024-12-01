@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
 
-import { STATUS_CODES } from '../constants/httpStatusCode';
+import { STATUS_CODES } from '../constants/httpStatusCodes';
 import { ERROR_MESSAGES } from '../constants/errorMessages';
 
 interface CustomError extends Error {

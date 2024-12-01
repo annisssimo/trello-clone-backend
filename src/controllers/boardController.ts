@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import BoardService from '../services/boardService';
-import { STATUS_CODES } from '../constants/httpStatusCode';
+import { STATUS_CODES } from '../constants/httpStatusCodes';
 
 class BoardController {
   public async getBoards(

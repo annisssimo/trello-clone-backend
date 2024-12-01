@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import TaskService from '../services/taskService';
-import { STATUS_CODES } from '../constants/httpStatusCode';
+import { STATUS_CODES } from '../constants/httpStatusCodes';
 
 class TaskController {
   public async getTasks(
@@ -109,6 +109,29 @@ class TaskController {
       res
         .status(STATUS_CODES.SUCCESS)
         .json({ message: 'Tasks reordered successfully' });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async moveTaskToList(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { taskId, fromListId, toListId, targetTaskId } = req.body;
+
+      const updatedLists = await TaskService.moveTaskToList(
+        Number(taskId),
+        Number(fromListId),
+        Number(toListId),
+        targetTaskId ? Number(targetTaskId) : null
+      );
+
+      res
+        .status(STATUS_CODES.SUCCESS)
+        .json({ message: 'Task moved successfully', updatedLists });
     } catch (error) {
       next(error);
     }

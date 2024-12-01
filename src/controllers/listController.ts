@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import ListService from '../services/listService';
-import { STATUS_CODES } from '../constants/httpStatusCode';
+import { STATUS_CODES } from '../constants/httpStatusCodes';
 
 class ListController {
   public async getLists(

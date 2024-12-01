@@ -6,6 +6,7 @@ import { errorHandler } from './middleware/errorMiddleware';
 import boardRoutes from './routes/boardRoutes';
 import listRoutes from './routes/listRoutes';
 import taskRoutes from './routes/taskRoutes';
+import userActionLogsRoutes from './routes/userActionLogsRoutes';
 
 dotenv.config();
 
@@ -21,6 +22,7 @@ app.use(express.json());
 app.use('/api/boards', boardRoutes);
 app.use('/api/lists', listRoutes);
 app.use('/api/tasks', taskRoutes);
+app.use('/api/logs', userActionLogsRoutes);
 app.use(errorHandler);
 
 app.listen(PORT, () =>
