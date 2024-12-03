@@ -12,17 +12,7 @@ class TaskController {
       const { listId } = req.params;
       const tasks = await TaskService.getTasksByList(Number(listId));
 
-      const tasksToSend = tasks.map((task) => {
-        return {
-          id: task.id,
-          title: task.title,
-          description: task.description,
-          listId: task.listId,
-          taskOrder: task.taskOrder,
-        };
-      });
-
-      res.status(STATUS_CODES.SUCCESS).json(tasksToSend);
+      res.status(STATUS_CODES.SUCCESS).json(tasks);
     } catch (error) {
       next(error);
     }
@@ -42,15 +32,7 @@ class TaskController {
         Number(listId)
       );
 
-      const taskToSend = {
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        listId: task.listId,
-        taskOrder: task.taskOrder,
-      };
-
-      res.status(STATUS_CODES.CREATED).json(taskToSend);
+      res.status(STATUS_CODES.CREATED).json(task);
     } catch (error) {
       next(error);
     }
@@ -68,15 +50,7 @@ class TaskController {
 
       const task = await TaskService.updateTask(Number(id), title, description);
 
-      const taskToSend = {
-        id: task.id,
-        title: task.title,
-        description: task.description,
-        listId: task.listId,
-        taskOrder: task.taskOrder,
-      };
-
-      res.status(STATUS_CODES.SUCCESS).json(taskToSend);
+      res.status(STATUS_CODES.SUCCESS).json(task);
     } catch (error) {
       next(error);
     }
@@ -89,8 +63,12 @@ class TaskController {
   ): Promise<void> {
     try {
       const { id } = req.params;
+
       await TaskService.deleteTask(Number(id));
-      res.status(STATUS_CODES.NO_CONTENT).send();
+
+      res
+        .status(STATUS_CODES.NO_CONTENT)
+        .json({ message: `Task ${id} was deleted` });
     } catch (error) {
       next(error);
     }
@@ -103,9 +81,11 @@ class TaskController {
   ): Promise<void> {
     try {
       const { listId } = req.params;
-      const { orderedTaskIds } = req.body; // Массив ID задач в новом порядке
+
+      const { orderedTaskIds } = req.body; // array tasks IDs in the mew order
 
       await TaskService.reorderTasks(Number(listId), orderedTaskIds);
+
       res
         .status(STATUS_CODES.SUCCESS)
         .json({ message: 'Tasks reordered successfully' });

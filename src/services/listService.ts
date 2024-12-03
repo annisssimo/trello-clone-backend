@@ -8,10 +8,21 @@ import { sequelize } from '../database/sequelize';
 
 class ListService {
   public async getListsByBoard(boardId: number) {
-    return await List.findAll({
+    const lists = await List.findAll({
       where: { boardId },
       raw: true,
     });
+
+    const formattedLists = lists.map((list) => {
+      return {
+        id: list.id,
+        title: list.title,
+        boardId: list.boardId,
+        listOrder: list.listOrder,
+      };
+    });
+
+    return formattedLists;
   }
 
   public async createList(title: string, boardId: number) {
@@ -40,7 +51,16 @@ class ListService {
       const userAction = `User added ${title} list to the ${board.title} board`;
       await UserActionLogsService.createUserActionLog(userAction, transaction);
 
-      return list.get({ plain: true });
+      const plainList = list.get({ plain: true });
+
+      const formattedList = {
+        id: plainList.id,
+        title: plainList.title,
+        boardId: plainList.boardId,
+        listOrder: plainList.listOrder,
+      };
+
+      return formattedList;
     });
   }
 
@@ -62,7 +82,14 @@ class ListService {
       const userAction = `User updated list title to ${updatedListPlain.title}`;
       await UserActionLogsService.createUserActionLog(userAction, transaction);
 
-      return updatedListPlain;
+      const formattedUpdatedList = {
+        id: updatedListPlain.id,
+        title: updatedListPlain.title,
+        boardId: updatedListPlain.boardId,
+        listOrder: updatedListPlain.listOrder,
+      };
+
+      return formattedUpdatedList;
     });
   }
 

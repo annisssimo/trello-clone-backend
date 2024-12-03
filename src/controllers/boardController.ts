@@ -10,10 +10,24 @@ class BoardController {
   ): Promise<void> {
     try {
       const boards = await BoardService.getAllBoards();
-      const boardsToSend = boards.map((board) => {
-        return { id: board.id, title: board.title };
-      });
-      res.status(STATUS_CODES.SUCCESS).json(boardsToSend);
+      res.status(STATUS_CODES.SUCCESS).json(boards);
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  public async getBoardWithListsAndTasks(
+    req: Request,
+    res: Response,
+    next: NextFunction
+  ): Promise<void> {
+    try {
+      const { id } = req.params;
+
+      const boardWithListsAndTasks =
+        await BoardService.getBoardWithListsAndTasks(Number(id));
+
+      res.status(STATUS_CODES.SUCCESS).json(boardWithListsAndTasks);
     } catch (error) {
       next(error);
     }
@@ -28,9 +42,7 @@ class BoardController {
       const { title } = req.body;
       const board = await BoardService.createBoard(title);
 
-      const boardToSend = { id: board.id, title: board.title };
-
-      res.status(STATUS_CODES.CREATED).json(boardToSend);
+      res.status(STATUS_CODES.CREATED).json(board);
     } catch (error) {
       next(error);
     }
@@ -47,9 +59,7 @@ class BoardController {
 
       const board = await BoardService.updateBoard(id, title);
 
-      const boardToSend = { id: board.id, title: board.title };
-
-      res.status(STATUS_CODES.SUCCESS).json(boardToSend);
+      res.status(STATUS_CODES.SUCCESS).json(board);
     } catch (error) {
       next(error);
     }
@@ -64,7 +74,9 @@ class BoardController {
       const { id } = req.params;
 
       await BoardService.deleteBoard(id);
-      res.status(STATUS_CODES.NO_CONTENT).send();
+      res
+        .status(STATUS_CODES.NO_CONTENT)
+        .json({ message: `Board ${id} was deleted` });
     } catch (error) {
       next(error);
     }

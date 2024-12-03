@@ -13,16 +13,7 @@ class ListController {
 
       const lists = await ListService.getListsByBoard(Number(boardId));
 
-      const listsToSend = lists.map((list) => {
-        return {
-          id: list.id,
-          title: list.title,
-          boardId: list.boardId,
-          listOrder: list.listOrder,
-        };
-      });
-
-      res.status(STATUS_CODES.SUCCESS).json(listsToSend);
+      res.status(STATUS_CODES.SUCCESS).json(lists);
     } catch (error) {
       next(error);
     }
@@ -37,14 +28,7 @@ class ListController {
       const { title, boardId } = req.body;
       const list = await ListService.createList(title, Number(boardId));
 
-      const listToSend = {
-        id: list.id,
-        title: list.title,
-        boardId: list.boardId,
-        listOrder: list.listOrder,
-      };
-
-      res.status(STATUS_CODES.CREATED).json(listToSend);
+      res.status(STATUS_CODES.CREATED).json(list);
     } catch (error) {
       next(error);
     }
@@ -62,14 +46,7 @@ class ListController {
 
       const list = await ListService.updateList(Number(id), title);
 
-      const listToSend = {
-        id: list.id,
-        title: list.title,
-        boardId: list.boardId,
-        listOrder: list.listOrder,
-      };
-
-      res.status(STATUS_CODES.SUCCESS).json(listToSend);
+      res.status(STATUS_CODES.SUCCESS).json(list);
     } catch (error) {
       next(error);
     }
@@ -98,7 +75,7 @@ class ListController {
   ): Promise<void> {
     try {
       const { boardId } = req.params;
-      const { orderedListIds } = req.body; // Массив ID листов в новом порядке
+      const { orderedListIds } = req.body; // array lists IDs in new order
 
       await ListService.reorderLists(Number(boardId), orderedListIds);
       res

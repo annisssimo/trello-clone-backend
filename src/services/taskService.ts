@@ -10,7 +10,19 @@ import { sequelize } from '../database/sequelize';
 
 class TaskService {
   public async getTasksByList(listId: number) {
-    return await Task.findAll({ where: { listId }, raw: true });
+    const tasks = await Task.findAll({ where: { listId }, raw: true });
+
+    const formattedTasks = tasks.map((task) => {
+      return {
+        id: task.id,
+        title: task.title,
+        description: task.description,
+        listId: task.listId,
+        taskOrder: task.taskOrder,
+      };
+    });
+
+    return formattedTasks;
   }
 
   public async createTask(title: string, description: string, listId: number) {
@@ -39,7 +51,17 @@ class TaskService {
       const userAction = `User created ${task.title} task in the ${list.title}`;
       await UserActionLogsService.createUserActionLog(userAction, transaction);
 
-      return task.get({ plain: true });
+      const plainTask = task.get({ plain: true });
+
+      const formattedTask = {
+        id: plainTask.id,
+        title: plainTask.title,
+        description: plainTask.description,
+        listId: plainTask.listId,
+        taskOrder: plainTask.taskOrder,
+      };
+
+      return formattedTask;
     });
   }
 
@@ -59,7 +81,17 @@ class TaskService {
       const userAction = `User updated ${task.title} task`;
       await UserActionLogsService.createUserActionLog(userAction, transaction);
 
-      return task.get({ plain: true });
+      const plainTask = task.get({ plain: true });
+
+      const formattedTask = {
+        id: plainTask.id,
+        title: plainTask.title,
+        description: plainTask.description,
+        listId: plainTask.listId,
+        taskOrder: plainTask.taskOrder,
+      };
+
+      return formattedTask;
     });
   }
 
@@ -74,9 +106,9 @@ class TaskService {
         );
       }
 
-      const deletedTaskPlain = task.get({ plain: true });
-
       await task.destroy({ transaction });
+
+      const deletedTaskPlain = task.get({ plain: true });
 
       const userAction = `User deleted ${deletedTaskPlain.title} task`;
       await UserActionLogsService.createUserActionLog(userAction, transaction);
@@ -105,7 +137,7 @@ class TaskService {
     fromListId: number,
     toListId: number,
     targetTaskId: number | null
-  ): Promise<{ [listId: number]: Task[] }> {
+  ) {
     const transaction: Transaction = await sequelize.transaction();
 
     try {
