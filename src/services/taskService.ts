@@ -117,18 +117,17 @@ class TaskService {
 
   public async reorderTasks(listId: number, orderedTaskIds: number[]) {
     return await sequelize.transaction(async (transaction: Transaction) => {
-      const tasks = await Task.findAll({ where: { listId }, transaction });
+      const tasksToUpdate = orderedTaskIds.map((taskId, index) => ({
+        id: taskId,
+        listId,
+        taskOrder: index + 1,
+        title: '',
+      }));
 
-      const tasksMap = new Map(tasks.map((task) => [task.id, task]));
-      let taskOrder = 1;
-
-      for (const taskId of orderedTaskIds) {
-        const task = tasksMap.get(taskId);
-
-        if (task) {
-          await task.update({ taskOrder: taskOrder++ }, { transaction });
-        }
-      }
+      await Task.bulkCreate(tasksToUpdate, {
+        updateOnDuplicate: ['taskOrder'],
+        transaction,
+      });
     });
   }
 
@@ -156,12 +155,22 @@ class TaskService {
         transaction,
       });
 
+      // Update orders in the source list
       let taskOrder = 1;
-      for (const t of tasksFromList) {
-        if (t.id !== taskId) {
-          await t.update({ taskOrder }, { transaction });
-          taskOrder++;
-        }
+      const tasksToUpdateInSource = tasksFromList
+        .filter((t) => t.id !== taskId)
+        .map((t) => ({
+          id: t.id,
+          listId: fromListId,
+          taskOrder: taskOrder++,
+          title: '',
+        }));
+
+      if (tasksToUpdateInSource.length > 0) {
+        await Task.bulkCreate(tasksToUpdateInSource, {
+          updateOnDuplicate: ['taskOrder'],
+          transaction,
+        });
       }
 
       const tasksToList = await Task.findAll({
@@ -177,20 +186,35 @@ class TaskService {
       const newTaskOrder =
         targetIndex !== -1 ? targetIndex + 1 : tasksToList.length + 1;
 
-      await task.update(
+      await Task.update(
         { listId: toListId, taskOrder: newTaskOrder },
-        { transaction }
+        {
+          where: { id: taskId },
+          transaction,
+        }
       );
 
       taskOrder = 1;
+      const tasksToUpdateInDestination = [];
       for (let i = 0; i <= tasksToList.length; i++) {
         if (i === targetIndex) {
           taskOrder++;
         }
         if (tasksToList[i]) {
-          await tasksToList[i].update({ taskOrder }, { transaction });
-          taskOrder++;
+          tasksToUpdateInDestination.push({
+            id: tasksToList[i].id,
+            listId: toListId,
+            taskOrder: taskOrder++,
+            title: '',
+          });
         }
+      }
+
+      if (tasksToUpdateInDestination.length > 0) {
+        await Task.bulkCreate(tasksToUpdateInDestination, {
+          updateOnDuplicate: ['taskOrder'],
+          transaction,
+        });
       }
 
       const taskTitlePlain = task.get({ plain: true }).title;
