@@ -4,6 +4,7 @@ import { STATUS_CODES } from '../constants/httpStatusCodes';
 import { ERROR_MESSAGES } from '../constants/errorMessages';
 import Board from '../models/Board';
 import UserActionLogsService from '../services/userActionLogsService';
+import { sequelize } from '../database/sequelize';
 
 class ListService {
   public async getListsByBoard(boardId: number) {
@@ -14,79 +15,91 @@ class ListService {
   }
 
   public async createList(title: string, boardId: number) {
-    const board = await Board.findByPk(boardId, { raw: true });
+    return await sequelize.transaction(async (transaction) => {
+      const board = await Board.findByPk(boardId, { raw: true, transaction });
 
-    if (!board) {
-      throw new HttpError(
-        ERROR_MESSAGES.BOARD_NOT_FOUND,
-        STATUS_CODES.NOT_FOUND
+      if (!board) {
+        throw new HttpError(
+          ERROR_MESSAGES.BOARD_NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        );
+      }
+
+      const maxListOrder: number = await List.max('listOrder', {
+        where: { boardId },
+        transaction,
+      });
+
+      const listOrder = maxListOrder ? maxListOrder + 1 : 1;
+
+      const list = await List.create(
+        { title, boardId, listOrder },
+        { transaction }
       );
-    }
 
-    const maxListOrder: number = await List.max('listOrder', {
-      where: { boardId },
+      const userAction = `User added ${title} list to the ${board.title} board`;
+      await UserActionLogsService.createUserActionLog(userAction, transaction);
+
+      return list.get({ plain: true });
     });
-
-    const listOrder = maxListOrder ? maxListOrder + 1 : 1;
-
-    const list = await List.create({ title, boardId, listOrder });
-
-    const userAction = `User added ${title} list to the ${board.title} board`;
-    UserActionLogsService.createUserActionLog(userAction);
-
-    return list.get({ plain: true });
   }
 
   public async updateList(id: number, title: string) {
-    const list = await List.findByPk(id);
+    return await sequelize.transaction(async (transaction) => {
+      const list = await List.findByPk(id, { transaction });
 
-    if (!list) {
-      throw new HttpError(
-        ERROR_MESSAGES.LIST_NOT_FOUND,
-        STATUS_CODES.NOT_FOUND
-      );
-    }
+      if (!list) {
+        throw new HttpError(
+          ERROR_MESSAGES.LIST_NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        );
+      }
 
-    await list.update({ title });
+      await list.update({ title }, { transaction });
 
-    const updatedListPlain = list.get({ plain: true });
+      const updatedListPlain = list.get({ plain: true });
 
-    const userAction = `User updated list title to ${updatedListPlain.title}`;
-    UserActionLogsService.createUserActionLog(userAction);
+      const userAction = `User updated list title to ${updatedListPlain.title}`;
+      await UserActionLogsService.createUserActionLog(userAction, transaction);
 
-    return updatedListPlain;
+      return updatedListPlain;
+    });
   }
 
   public async deleteList(id: number) {
-    const list = await List.findByPk(id);
+    return await sequelize.transaction(async (transaction) => {
+      const list = await List.findByPk(id, { transaction });
 
-    if (!list) {
-      throw new HttpError(
-        ERROR_MESSAGES.LIST_NOT_FOUND,
-        STATUS_CODES.NOT_FOUND
-      );
-    }
+      if (!list) {
+        throw new HttpError(
+          ERROR_MESSAGES.LIST_NOT_FOUND,
+          STATUS_CODES.NOT_FOUND
+        );
+      }
 
-    const deletedListPlain = list.get({ plain: true });
+      const deletedListPlain = list.get({ plain: true });
 
-    await list.destroy();
+      await list.destroy({ transaction });
 
-    const userAction = `User deleted the list ${deletedListPlain.title}`;
-    UserActionLogsService.createUserActionLog(userAction);
+      const userAction = `User deleted the list ${deletedListPlain.title}`;
+      await UserActionLogsService.createUserActionLog(userAction, transaction);
+    });
   }
 
-  async reorderLists(boardId: number, orderedListIds: number[]): Promise<void> {
-    const lists = await List.findAll({ where: { boardId } });
+  public async reorderLists(boardId: number, orderedListIds: number[]) {
+    return await sequelize.transaction(async (transaction) => {
+      const lists = await List.findAll({ where: { boardId }, transaction });
 
-    const listsMap = new Map(lists.map((list) => [list.id, list]));
-    let listOrder = 1;
+      const listsMap = new Map(lists.map((list) => [list.id, list]));
+      let listOrder = 1;
 
-    for (const listId of orderedListIds) {
-      const list = listsMap.get(listId);
-      if (list) {
-        await list.update({ listOrder: listOrder++ });
+      for (const listId of orderedListIds) {
+        const list = listsMap.get(listId);
+        if (list) {
+          await list.update({ listOrder: listOrder++ }, { transaction });
+        }
       }
-    }
+    });
   }
 }
 

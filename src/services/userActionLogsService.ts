@@ -1,3 +1,5 @@
+import { Transaction } from 'sequelize';
+
 import UserActionLogs from '../models/UserActionLogs';
 
 class UserActionLogsService {
@@ -5,8 +7,8 @@ class UserActionLogsService {
     return UserActionLogs.findAll({ raw: true });
   }
 
-  public async createUserActionLog(action: string) {
-    await UserActionLogs.create({ action });
+  public async createUserActionLog(action: string, transaction?: Transaction) {
+    await UserActionLogs.create({ action }, { transaction });
   }
 }
 
