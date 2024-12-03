@@ -25,7 +25,11 @@ class TaskService {
     return formattedTasks;
   }
 
-  public async createTask(title: string, description: string, listId: number) {
+  public async createTask(
+    title: string,
+    listId: number,
+    description?: string | null
+  ) {
     return await sequelize.transaction(async (transaction: Transaction) => {
       const list = await List.findByPk(listId, { raw: true, transaction });
 
@@ -65,7 +69,11 @@ class TaskService {
     });
   }
 
-  public async updateTask(id: number, title: string, description?: string) {
+  public async updateTask(
+    id: number,
+    title: string,
+    description?: string | null
+  ) {
     return await sequelize.transaction(async (transaction: Transaction) => {
       const task = await Task.findByPk(id, { transaction });
 
@@ -135,7 +143,7 @@ class TaskService {
     taskId: number,
     fromListId: number,
     toListId: number,
-    targetTaskId: number | null
+    targetTaskId: number
   ) {
     const transaction: Transaction = await sequelize.transaction();
 

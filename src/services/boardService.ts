@@ -68,7 +68,7 @@ class BoardService {
     });
   }
 
-  public async updateBoard(id: string, title: string) {
+  public async updateBoard(id: number, title: string) {
     return await sequelize.transaction(async (transaction) => {
       const board = await Board.findByPk(id, { transaction });
 
@@ -95,7 +95,7 @@ class BoardService {
     });
   }
 
-  public async deleteBoard(id: string) {
+  public async deleteBoard(id: number) {
     return await sequelize.transaction(async (transaction) => {
       const board = await Board.findByPk(id, { transaction });
 

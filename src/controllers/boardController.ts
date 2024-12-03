@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import BoardService from '../services/boardService';
 import { STATUS_CODES } from '../constants/httpStatusCodes';
+import { Board } from '../types/types';
 
 class BoardController {
   public async getBoards(
     req: Request,
-    res: Response,
+    res: Response<Board[]>,
     next: NextFunction
   ): Promise<void> {
     try {
@@ -17,8 +18,8 @@ class BoardController {
   }
 
   public async getBoardWithListsAndTasks(
-    req: Request,
-    res: Response,
+    req: Request<{ id: string }>,
+    res: Response<Board>,
     next: NextFunction
   ): Promise<void> {
     try {
@@ -34,8 +35,8 @@ class BoardController {
   }
 
   public async createBoard(
-    req: Request,
-    res: Response,
+    req: Request<unknown, Board, { title: string }>,
+    res: Response<Board>,
     next: NextFunction
   ): Promise<void> {
     try {
@@ -49,15 +50,15 @@ class BoardController {
   }
 
   public async updateBoard(
-    req: Request<{ id: string }>,
-    res: Response,
+    req: Request<{ id: string }, Board, { title: string }>,
+    res: Response<Board>,
     next: NextFunction
   ): Promise<void> {
     try {
       const { id } = req.params;
       const { title } = req.body;
 
-      const board = await BoardService.updateBoard(id, title);
+      const board = await BoardService.updateBoard(Number(id), title);
 
       res.status(STATUS_CODES.SUCCESS).json(board);
     } catch (error) {
@@ -73,7 +74,7 @@ class BoardController {
     try {
       const { id } = req.params;
 
-      await BoardService.deleteBoard(id);
+      await BoardService.deleteBoard(Number(id));
       res
         .status(STATUS_CODES.NO_CONTENT)
         .json({ message: `Board ${id} was deleted` });

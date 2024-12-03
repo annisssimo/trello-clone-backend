@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import TaskService from '../services/taskService';
 import { STATUS_CODES } from '../constants/httpStatusCodes';
+import { Task } from '../types/types';
 
 class TaskController {
   public async getTasks(
-    req: Request,
-    res: Response,
+    req: Request<{ listId: string }>,
+    res: Response<Task[]>,
     next: NextFunction
   ): Promise<void> {
     try {
@@ -19,18 +20,13 @@ class TaskController {
   }
 
   public async createTask(
-    req: Request,
-    res: Response,
+    req: Request<unknown, unknown, Omit<Task, 'id' | 'taskOrder'>>,
+    res: Response<Task>,
     next: NextFunction
   ): Promise<void> {
     try {
       const { title, description, listId } = req.body;
-
-      const task = await TaskService.createTask(
-        title,
-        description,
-        Number(listId)
-      );
+      const task = await TaskService.createTask(title, listId, description);
 
       res.status(STATUS_CODES.CREATED).json(task);
     } catch (error) {
@@ -39,13 +35,12 @@ class TaskController {
   }
 
   public async updateTask(
-    req: Request,
-    res: Response,
+    req: Request<{ id: string }, unknown, Pick<Task, 'title' | 'description'>>,
+    res: Response<Task>,
     next: NextFunction
   ): Promise<void> {
     try {
       const { id } = req.params;
-
       const { title, description } = req.body;
 
       const task = await TaskService.updateTask(Number(id), title, description);
@@ -57,13 +52,12 @@ class TaskController {
   }
 
   public async deleteTask(
-    req: Request,
+    req: Request<{ id: string }>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const { id } = req.params;
-
       await TaskService.deleteTask(Number(id));
 
       res
@@ -75,14 +69,13 @@ class TaskController {
   }
 
   public async reorderTasks(
-    req: Request,
+    req: Request<{ listId: string }, unknown, ReorderTasksRequestBody>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const { listId } = req.params;
-
-      const { orderedTaskIds } = req.body; // array tasks IDs in the mew order
+      const { orderedTaskIds } = req.body;
 
       await TaskService.reorderTasks(Number(listId), orderedTaskIds);
 
@@ -95,7 +88,7 @@ class TaskController {
   }
 
   public async moveTaskToList(
-    req: Request,
+    req: Request<unknown, unknown, MoveTaskRequestBody>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
@@ -103,10 +96,10 @@ class TaskController {
       const { taskId, fromListId, toListId, targetTaskId } = req.body;
 
       const updatedLists = await TaskService.moveTaskToList(
-        Number(taskId),
-        Number(fromListId),
-        Number(toListId),
-        targetTaskId ? Number(targetTaskId) : null
+        taskId,
+        fromListId,
+        toListId,
+        targetTaskId
       );
 
       res
@@ -119,3 +112,14 @@ class TaskController {
 }
 
 export default new TaskController();
+
+interface ReorderTasksRequestBody {
+  orderedTaskIds: number[];
+}
+
+interface MoveTaskRequestBody {
+  taskId: number;
+  fromListId: number;
+  toListId: number;
+  targetTaskId: number;
+}

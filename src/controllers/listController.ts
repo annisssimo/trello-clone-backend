@@ -1,11 +1,12 @@
 import { Request, Response, NextFunction } from 'express';
 import ListService from '../services/listService';
 import { STATUS_CODES } from '../constants/httpStatusCodes';
+import { List } from '../types/types';
 
 class ListController {
   public async getLists(
-    req: Request,
-    res: Response,
+    req: Request<{ boardId: string }>,
+    res: Response<List[]>,
     next: NextFunction
   ): Promise<void> {
     try {
@@ -20,13 +21,13 @@ class ListController {
   }
 
   public async createList(
-    req: Request,
-    res: Response,
+    req: Request<unknown, unknown, { title: string; boardId: number }>,
+    res: Response<List>,
     next: NextFunction
   ): Promise<void> {
     try {
       const { title, boardId } = req.body;
-      const list = await ListService.createList(title, Number(boardId));
+      const list = await ListService.createList(title, boardId);
 
       res.status(STATUS_CODES.CREATED).json(list);
     } catch (error) {
@@ -35,13 +36,12 @@ class ListController {
   }
 
   public async updateList(
-    req: Request,
-    res: Response,
+    req: Request<{ id: string }, unknown, { title: string }>,
+    res: Response<List>,
     next: NextFunction
   ): Promise<void> {
     try {
       const { id } = req.params;
-
       const { title } = req.body;
 
       const list = await ListService.updateList(Number(id), title);
@@ -53,7 +53,7 @@ class ListController {
   }
 
   public async deleteList(
-    req: Request,
+    req: Request<{ id: string }>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
@@ -69,13 +69,13 @@ class ListController {
   }
 
   public async reorderLists(
-    req: Request,
+    req: Request<{ boardId: string }, unknown, ReorderListsRequestBody>,
     res: Response,
     next: NextFunction
   ): Promise<void> {
     try {
       const { boardId } = req.params;
-      const { orderedListIds } = req.body; // array lists IDs in new order
+      const { orderedListIds } = req.body;
 
       await ListService.reorderLists(Number(boardId), orderedListIds);
       res
@@ -88,3 +88,7 @@ class ListController {
 }
 
 export default new ListController();
+
+interface ReorderListsRequestBody {
+  orderedListIds: number[];
+}
