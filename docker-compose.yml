@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:13
-    container_name: postgres_container
+    container_name: postgrescontainer
     environment:
       POSTGRES_USER: annisssimo
       POSTGRES_PASSWORD: 4456
